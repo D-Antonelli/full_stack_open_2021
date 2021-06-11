@@ -52,12 +52,11 @@ const App = () => {
 
   useEffect(() => {
     const promise = axios.get("http://localhost:3001/persons");
-    promise.then(response => {
-     const persons = response.data;
+    promise.then((response) => {
+      const persons = response.data;
       setPersons(persons);
-    })
-  },[]);
-
+    });
+  }, []);
 
   const onNewName = (event) => {
     setNewName(event.target.value);
@@ -73,14 +72,19 @@ const App = () => {
 
   const addNewPerson = (event) => {
     event.preventDefault();
+    
     if (!persons.find((person) => person.name === newName)) {
       const newPerson = {
         name: newName,
         number: newNumber,
       };
-      setPersons(persons.concat(newPerson));
-      setNewName("");
-      setNewNumber("");
+      //ADD TO SERVER
+      const promise = axios.post("http://localhost:3001/persons", newPerson);
+      promise.then((response) => {
+        setPersons(persons.concat(response.data));
+        setNewName("");
+        setNewNumber("");
+      });
     } else {
       alert(`${newName} is already added to phonebook`);
     }

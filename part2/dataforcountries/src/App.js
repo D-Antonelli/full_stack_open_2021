@@ -81,14 +81,14 @@ const Suggestions = ({ data, onClick }) => {
   return data.map((each) => (
     <div key={each.name}>
       <Suggestion data={each} />
-      <ShowButton onClick={onClick} bind={each} text="show" />
+      <ShowButton onClick={() => onClick(each.name)} text="show" />
     </div>
   ));
 };
 
-const ShowButton = ({ onClick, bind, text }) => {
+const ShowButton = ({ onClick, text }) => {
   return (
-    <button onClick={onClick} data-selected={bind.name}>
+    <button onClick={onClick}>
       {text}
     </button>
   );
@@ -121,9 +121,8 @@ const App = () => {
     country.name.toUpperCase().includes(keyword.toUpperCase())
   );
 
-  const show = (event) => {
-    const name = event.target.dataset.selected;
-    setKeyword(name.toLowerCase());
+  const show = (countryName) => {
+    setKeyword(countryName.toLowerCase());
   };
 
   const showResults = (dataToFilter) => {
