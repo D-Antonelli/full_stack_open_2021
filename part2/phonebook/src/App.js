@@ -1,48 +1,8 @@
 import React, { useState, useEffect } from "react";
 import personsService from "./services/persons";
-
-const Filter = (props) => {
-  return (
-    <>
-      filter shown with
-      <input value={props.value} onChange={props.onChange} />
-    </>
-  );
-};
-
-const PersonForm = (props) => {
-  return (
-    <form onSubmit={props.onSubmit}>
-      <div>
-        name: <input value={props.newName} onChange={props.onNewName} />
-      </div>
-      <div>
-        number: <input value={props.newNumber} onChange={props.onNewNumber} />
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  );
-};
-
-const Persons = (props) => {
-  return (
-    <ul>
-      {props.list.map((person) => (
-        <Person key={person.name} name={person.name} number={person.number} />
-      ))}
-    </ul>
-  );
-};
-
-const Person = (props) => {
-  return (
-    <li>
-      {props.name} {props.number}
-    </li>
-  );
-};
+import Filter from "./components/Filter";
+import PersonForm from "./components/PersonForm";
+import Persons from "./components/Persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -66,10 +26,22 @@ const App = () => {
     setFilter(event.target.value);
   };
 
+  const resetInputs = () => {
+    setNewName("");
+    setNewNumber("");
+  };
+
+  const onDelete = (id, name) => {
+    const confirmed = window.confirm(`Delete ${name}?`);
+    confirmed &&
+      personsService.deletePerson(id) &&
+      setPersons(persons.filter((person) => person.id !== id));
+  };
+
   const addNewPerson = (event) => {
     event.preventDefault();
 
-    if (!persons.find((person) => person.name === newName)) {
+    if (persons.find((person) => person.name === newName) === undefined) {
       const newPerson = {
         name: newName,
         number: newNumber,
@@ -77,6 +49,35 @@ const App = () => {
       personsService
         .create(newPerson)
         .then((data) => setPersons(persons.concat(data)));
+      resetInputs();
+    } else if (
+      persons.find(
+        (person) => person.name === newName && person.number !== newNumber
+      )
+    ) {
+      const confirmed = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
+      if (confirmed) {
+        const found = persons.find(
+          (person) => person.name === newName && person.number !== newNumber
+        );
+        const changedObj = {
+          name: newName,
+          number: newNumber,
+          id: found.id,
+        };
+        personsService
+          .change(found.id, changedObj)
+          .then((newObj) =>
+            setPersons(
+              persons.map((person) =>
+                person.id !== found.id ? person : newObj
+              )
+            )
+          );
+        resetInputs();
+      }
     } else {
       alert(`${newName} is already added to phonebook`);
     }
@@ -102,7 +103,7 @@ const App = () => {
         onNewNumber={onNewNumber}
       />
       <h3>Numbers</h3>
-      <Persons list={listToShow} />
+      <Persons list={listToShow} onClick={onDelete} />
     </div>
   );
 };
