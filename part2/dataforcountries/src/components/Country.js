@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 const Country = ({ data }) => {
@@ -20,29 +20,36 @@ const Country = ({ data }) => {
     };
   }, []);
 
+  const showWeather =
+    weather !== undefined && weather.current !== undefined ? (
+      <Weather result={weather} />
+    ) : (
+      <p>No weather results</p>
+    );
+
   return (
     <div>
       <Details data={data} />
-      <Weather result={weather} />
+      {showWeather}
     </div>
   );
 };
 
 const Weather = ({ result }) => {
-    return result !== undefined && result.current !== undefined && (
-      <section>
-        <h2>Weather in {result.location.name}</h2>
-        <p>
-          <span className="bold">temperature:</span>{" "}
-          {result.current.temperature} Celcius
-        </p>
-        <img alt="weather icon" src={result.current["weather_icons"][0]}></img>
-        <p>
-          <span className="bold">wind:</span> {result.current["wind_speed"]} mph
-          direction {result.current["wind_dir"]}
-        </p>
-      </section>
-    )
+  return (
+    <section>
+      <h2>Weather in {result.location.name}</h2>
+      <p>
+        <span className="bold">temperature:</span> {result.current.temperature}{" "}
+        Celcius
+      </p>
+      <img alt="weather icon" src={result.current["weather_icons"][0]}></img>
+      <p>
+        <span className="bold">wind:</span> {result.current["wind_speed"]} mph
+        direction {result.current["wind_dir"]}
+      </p>
+    </section>
+  );
 };
 
 const Details = ({ data }) => {
