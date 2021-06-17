@@ -1,24 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const Country = ({ data }) => {
   const [weather, setWeather] = useState();
+  
+  useEffect(() => {
   const BASE_API = `http://api.weatherstack.com/current`;
   const AUTH = `?access_key=${process.env.REACT_APP_WEATHER_API_KEY}`;
   const END_POINT = `&query=${data[0].capital}&units=m`;
-
-  useState(() => {
-    let isMounted = true;
     const fetchWeather = async () => {
       const response = await axios.get(`${BASE_API}${AUTH}${END_POINT}`);
-      response.status === 200 && isMounted && setWeather(response.data);
+      response.status === 200 && setWeather(response.data);
     };
     fetchWeather();
-    //cleanup callback
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  }, [data]);
 
   const showWeather =
     weather !== undefined && weather.current !== undefined ? (
