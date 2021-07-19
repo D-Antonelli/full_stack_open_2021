@@ -4,19 +4,15 @@ import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import Notification from "./components/Notification";
+import useNotificationState from "./hooks/useNotificationState";
 import { MESSAGE_TYPE } from "./constants/MessageType";
-
-const defaultMessage = {
-  text: null,
-  type: MESSAGE_TYPE.UNSET,
-};
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
-  const [message, setMessage] = useState(defaultMessage);
+  const [text, setTextWithTimer] = useNotificationState(null);
 
   useEffect(() => {
     personsService.getAll().then((persons) => setPersons(persons));
@@ -46,12 +42,6 @@ const App = () => {
       setPersons(persons.filter((person) => person.id !== id));
   };
 
-  const timeoutMessage = (ms = 5000) => {
-    return setTimeout(() => {
-      setMessage(defaultMessage);
-    }, ms);
-  };
-
   const addNewPerson = (event) => {
     event.preventDefault();
 
@@ -60,16 +50,25 @@ const App = () => {
         name: newName,
         number: newNumber,
       };
-      personsService.create(newPerson).then((data) => {
-        setPersons(persons.concat(data));
-        const successMessage = {
-          text: `Added ${newName}`,
-          type: MESSAGE_TYPE.SUCCESS,
-        };
-        setMessage(successMessage);
-        timeoutMessage();
-        resetInputs();
-      });
+      personsService
+        .create(newPerson)
+        .then((data) => {
+          setPersons(persons.concat(data));
+          setTextWithTimer({
+            text: `Added ${newName}`,
+            type: MESSAGE_TYPE.SUCCESS,
+          });
+          resetInputs();
+        })
+        .catch((error) => {
+          const data = error.response.data;
+          const regex = /(?<=<pre>).+?(?=<br>)/;
+          const formattedErrorData = data.match(regex).join();
+          setTextWithTimer({
+            text: formattedErrorData,
+            type: MESSAGE_TYPE.ERROR,
+          });
+        });
     } else if (
       persons.find(
         (person) => person.name === newName && person.number !== newNumber
@@ -91,21 +90,17 @@ const App = () => {
                 person.id !== found.id ? person : newObj
               )
             );
-            const successMessage = {
+            setTextWithTimer({
               text: `Changed ${newName}'s number to ${newNumber}`,
               type: MESSAGE_TYPE.SUCCESS,
-            };
-            setMessage(successMessage);
-            timeoutMessage();
+            });
             resetInputs();
           })
           .catch((error) => {
-            const errorMessage = {
+            setTextWithTimer({
               text: `Contact ${newName} has already removed from server`,
               type: MESSAGE_TYPE.ERROR,
-            };
-            setMessage(errorMessage);
-            timeoutMessage();
+            });
           });
       }
     } else {
@@ -123,7 +118,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification detail={message} />
+      <Notification detail={text} />
       <Filter value={filter} onChange={onFilterChange} />
       <h3>add a new</h3>
       <PersonForm
