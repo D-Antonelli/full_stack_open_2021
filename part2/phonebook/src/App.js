@@ -62,7 +62,7 @@ const App = () => {
         })
         .catch((error) => {
           const data = error.response.data;
-          const regex = /(?<=<pre>).+?(?=<br>)/;
+          const regex = /(?<=<pre>).+?(?=<\/pre>)/;
           const formattedErrorData = data.match(regex).join();
           setTextWithTimer({
             text: formattedErrorData,
