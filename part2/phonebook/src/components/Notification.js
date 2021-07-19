@@ -1,5 +1,5 @@
 const Notification = ({ detail }) => {
-  if (detail.text === null) {
+  if (detail === null) {
     return null;
   }
   return detail.type === "success" ? (
