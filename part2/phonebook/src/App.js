@@ -61,11 +61,8 @@ const App = () => {
           resetInputs();
         })
         .catch((error) => {
-          const data = error.response.data;
-          const regex = /(?<=<pre>).+?(?=<\/pre>)/;
-          const formattedErrorData = data.match(regex).join();
           setTextWithTimer({
-            text: formattedErrorData,
+            text: error.response.data.error,
             type: MESSAGE_TYPE.ERROR,
           });
         });
@@ -98,7 +95,7 @@ const App = () => {
           })
           .catch((error) => {
             setTextWithTimer({
-              text: `Contact ${newName} has already removed from server`,
+              text: error.response.data.error,
               type: MESSAGE_TYPE.ERROR,
             });
           });
